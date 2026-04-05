@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <meta
+            name="theme-color"
+            content="#151a26"
+        />
+        <meta
+            name="mobile-web-app-capable"
+            content="yes"
+        />
+        <meta
+            name="apple-mobile-web-app-capable"
+            content="yes"
+        />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <meta
+            name="apple-mobile-web-app-title"
+            content="Tasbih Counter"
+        />
+        <title>Tasbih Counter - HTML Version</title>
+        <link
+            rel="manifest"
+            href="./manifest.webmanifest"
+        />
+        <link
+            rel="icon"
+            href="./icon.svg"
+            type="image/svg+xml"
+        />
+        <link
+            rel="apple-touch-icon"
+            href="./icon.svg"
+        />
+        <link
+            rel="preconnect"
+            href="https://fonts.googleapis.com"
+        />
+        <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="./styles.css"
+        />
+    </head>
+    <body>
+        <main
+            id="app"
+            class="app prayer-bg-fajr"
+        >
+            <section
+                id="header"
+                class="header panel-enter"
+            >
+                <h1 class="bismillah">بِسْمِ اللَّهِ</h1>
+                <p class="subtitle">TASBIH COUNTER</p>
+            </section>
+
+            <section
+                id="duaSelectorWrap"
+                class="dua-selector-wrap panel-enter"
+            >
+                <div class="dua-row">
+                    <div
+                        class="dropdown"
+                        id="duaDropdown"
+                    >
+                        <button
+                            id="duaButton"
+                            class="dropdown-btn"
+                            type="button"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                        >
+                            <span class="dropdown-content">
+                                <span
+                                    id="duaArabic"
+                                    class="dua-arabic"
+                                ></span>
+                                <span
+                                    id="duaMeta"
+                                    class="dua-meta"
+                                ></span>
+                            </span>
+                            <span class="dropdown-icons">
+                                <span
+                                    id="selectedDuaStatus"
+                                    class="selected-status"
+                                    >✗</span
+                                >
+                                <span
+                                    id="duaChevron"
+                                    class="chevron"
+                                    >▾</span
+                                >
+                            </span>
+                        </button>
+                        <div
+                            id="duaMenu"
+                            class="dropdown-menu hidden"
+                            role="listbox"
+                            aria-label="Dua options"
+                        ></div>
+                    </div>
+                    <div
+                        id="streakBadge"
+                        class="streak-badge"
+                        aria-label="Streak"
+                    >
+                        <span class="streak-icon">🔥</span>
+                        <span
+                            id="streakValue"
+                            class="streak-value"
+                            >0</span
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <section class="counter-zone">
+                <div
+                    id="counterWrap"
+                    class="counter-wrap"
+                >
+                    <svg
+                        id="classicRing"
+                        class="counter-ring"
+                        viewBox="0 0 320 320"
+                        width="320"
+                        height="320"
+                        aria-hidden="true"
+                    ></svg>
+                    <svg
+                        id="modernRing"
+                        class="counter-ring hidden"
+                        viewBox="0 0 320 320"
+                        width="320"
+                        height="320"
+                        aria-hidden="true"
+                    ></svg>
+
+                    <div
+                        id="centerCircle"
+                        class="center-circle"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Tasbih counter center button"
+                    >
+                        <div
+                            id="countValue"
+                            class="count-value"
+                        >
+                            0
+                        </div>
+                    </div>
+
+                    <div
+                        id="completionGlow"
+                        class="completion-glow hidden"
+                    ></div>
+                </div>
+            </section>
+
+            <p
+                id="duaMeaning"
+                class="dua-meaning panel-enter"
+            ></p>
+
+            <section
+                id="prayerSelector"
+                class="prayer-selector panel-enter"
+                aria-label="Prayer selector"
+            ></section>
+
+            <section
+                class="settings-shell"
+                id="settingsShell"
+            >
+                <button
+                    id="settingsToggle"
+                    class="settings-btn"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="settingsPanel"
+                    aria-label="Open settings"
+                >
+                    ⚙
+                </button>
+                <div
+                    id="settingsPanel"
+                    class="settings-panel hidden"
+                    role="dialog"
+                    aria-label="Settings"
+                >
+                    <p class="settings-title">Settings</p>
+                    <label
+                        class="checkbox-row"
+                        for="vibrationCheck"
+                    >
+                        <input
+                            id="vibrationCheck"
+                            type="checkbox"
+                        />
+                        <span>Vibration</span>
+                    </label>
+                    <div
+                        id="intensityWrap"
+                        class="intensity-wrap"
+                    >
+                        <label
+                            for="intensityRange"
+                            class="intensity-label"
+                            >Intensity:
+                            <span id="intensityValue">40</span>ms</label
+                        >
+                        <input
+                            id="intensityRange"
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value="40"
+                        />
+                    </div>
+
+                    <div class="settings-group">
+                        <p class="settings-label">App mode</p>
+                        <button
+                            id="modeToggle"
+                            class="settings-action"
+                            type="button"
+                        >
+                            Custom Mode
+                        </button>
+                    </div>
+
+                    <div
+                        id="customTargetWrap"
+                        class="settings-group hidden"
+                    >
+                        <label
+                            for="customTargetRange"
+                            class="settings-label"
+                            >Custom target:
+                            <span id="customTargetValue">100</span></label
+                        >
+                        <input
+                            id="customTargetRange"
+                            type="range"
+                            min="1"
+                            max="1000"
+                            step="1"
+                            value="100"
+                        />
+                    </div>
+
+                    <div class="settings-group">
+                        <p class="settings-label">Counter style</p>
+                        <button
+                            id="styleToggle"
+                            class="settings-action"
+                            type="button"
+                        >
+                            Modern
+                        </button>
+                    </div>
+
+                    <div class="settings-group">
+                        <p class="settings-label">Screen</p>
+                        <button
+                            id="fullscreenToggle"
+                            class="settings-action"
+                            type="button"
+                        >
+                            Full Screen
+                        </button>
+                    </div>
+
+                    <div class="settings-group">
+                        <button
+                            id="resetAllButton"
+                            class="settings-action danger"
+                            type="button"
+                        >
+                            Reset all data
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <script
+            src="./script.js"
+            defer
+        ></script>
+    </body>
+</html>
