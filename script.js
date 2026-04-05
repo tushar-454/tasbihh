@@ -308,7 +308,16 @@
     const applyIshaStreakIfEligible = (state, now) => {
         if (!isIshaTimeOrLater(now)) return state;
         if (state.lastStreakDate === state.dateKey) return state;
-        if (!didMeetDailyStreakRequirement(state)) return state;
+        if (!didMeetDailyStreakRequirement(state)) {
+            if (state.streak === 0 && state.lastStreakDate === null) {
+                return state;
+            }
+            return {
+                ...state,
+                streak: 0,
+                lastStreakDate: null,
+            };
+        }
 
         const streak =
             state.lastStreakDate &&
@@ -330,21 +339,13 @@
         }
 
         const passedDays = dayDiff(state.dateKey, todayKey);
+        const canCarryStreak =
+            passedDays === 1 &&
+            state.lastStreakDate === state.dateKey &&
+            isConsecutiveDay(state.lastStreakDate, todayKey);
 
-        let streak = state.streak;
-        let lastStreakDate = state.lastStreakDate;
-
-        // Midnight resets daily progress only; streak must already be awarded
-        // during Isha for the previous date.
-        if (state.lastStreakDate !== state.dateKey) {
-            streak = 0;
-            lastStreakDate = null;
-        }
-
-        if (passedDays > 1) {
-            streak = 0;
-            lastStreakDate = null;
-        }
+        const streak = canCarryStreak ? state.streak : 0;
+        const lastStreakDate = canCarryStreak ? state.lastStreakDate : null;
 
         const fresh = createEmptyDailyState(
             now,
@@ -784,6 +785,7 @@
             }
         }
 
+        renderTopState();
         renderCounter();
         renderDuaMenu();
         persistAppState();
@@ -871,6 +873,9 @@
             const selectedDua = getSelectedDua();
             if (!selectedDua) return;
             const prayerProgress = getPrayerData();
+            if (prayerProgress.completedDuaIds.includes(selectedDua.id)) {
+                return;
+            }
             prayerProgress.duaCounts[selectedDua.id] = 0;
         }
         renderCounter();
