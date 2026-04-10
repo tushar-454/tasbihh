@@ -552,6 +552,64 @@ body {
     background: hsl(0 72% 62% / 0.12);
 }
 
+body.dialog-open {
+    overflow: hidden;
+}
+
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 160;
+    background: hsl(220 30% 5% / 0.58);
+    backdrop-filter: blur(4px);
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+}
+
+.dialog-card {
+    width: min(92vw, 380px);
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    background: hsl(220 15% 14% / 0.98);
+    box-shadow: 0 18px 40px hsl(220 60% 2% / 0.55);
+    padding: 1rem;
+    animation: dialogIn 180ms ease;
+}
+
+@keyframes dialogIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.dialog-title {
+    margin: 0;
+    color: var(--primary);
+    font-family: "Amiri", serif;
+    font-size: 1.35rem;
+    line-height: 1.2;
+}
+
+.dialog-description {
+    margin: 0.6rem 0 0;
+    color: var(--muted-foreground);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.dialog-actions {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
 @media (max-width: 440px) {
     .app {
         padding-top: 1rem;

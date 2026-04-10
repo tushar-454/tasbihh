@@ -101,7 +101,16 @@
     const APP_STORAGE_KEY = "tasbih-progress-v2";
     const SETTINGS_STORAGE_KEY = "tasbih-settings";
     const PRAYER_ORDER = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
-    const ISHA_START_MINUTES = 1200;
+    const fajrTimeStart = "05:00";
+    const fajrTimeEnd = "07:00";
+    const dhuhrTimeStart = "12:00";
+    const dhuhrTimeEnd = "15:00";
+    const asrTimeStart = "16:30";
+    const asrTimeEnd = "17:30";
+    const maghribTimeStart = "18:00";
+    const maghribTimeEnd = "19:00";
+    const ishaTimeStart = "20:00";
+    const ishaTimeEnd = "22:00";
     const MIN_COMPLETED_DUAS_PER_PRAYER_FOR_STREAK = 3;
 
     const prayerBgClass = {
@@ -152,6 +161,9 @@
     const styleToggle = document.getElementById("styleToggle");
     const fullscreenToggle = document.getElementById("fullscreenToggle");
     const resetAllButton = document.getElementById("resetAllButton");
+    const resetDialogOverlay = document.getElementById("resetDialogOverlay");
+    const resetCancelButton = document.getElementById("resetCancelButton");
+    const resetDeleteButton = document.getElementById("resetDeleteButton");
 
     const toDateKey = (date) => {
         const y = date.getFullYear();
@@ -159,6 +171,39 @@
         const d = String(date.getDate()).padStart(2, "0");
         return `${y}-${m}-${d}`;
     };
+
+    const timeStringToMinutes = (value) => {
+        const [hoursRaw, minutesRaw] = String(value).split(":");
+        const hours = Number.parseInt(hoursRaw, 10);
+        const minutes = Number.parseInt(minutesRaw, 10);
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return 0;
+        return Math.max(0, Math.min(1439, hours * 60 + minutes));
+    };
+
+    const PRAYER_TIME_WINDOWS = {
+        fajr: {
+            start: timeStringToMinutes(fajrTimeStart),
+            end: timeStringToMinutes(fajrTimeEnd),
+        },
+        dhuhr: {
+            start: timeStringToMinutes(dhuhrTimeStart),
+            end: timeStringToMinutes(dhuhrTimeEnd),
+        },
+        asr: {
+            start: timeStringToMinutes(asrTimeStart),
+            end: timeStringToMinutes(asrTimeEnd),
+        },
+        maghrib: {
+            start: timeStringToMinutes(maghribTimeStart),
+            end: timeStringToMinutes(maghribTimeEnd),
+        },
+        isha: {
+            start: timeStringToMinutes(ishaTimeStart),
+            end: timeStringToMinutes(ishaTimeEnd),
+        },
+    };
+
+    const ISHA_START_MINUTES = PRAYER_TIME_WINDOWS.isha.start;
 
     const dayDiff = (fromKey, toKey) => {
         const from = new Date(`${fromKey}T00:00:00`);
@@ -171,24 +216,28 @@
 
     const minutesNow = (date) => date.getHours() * 60 + date.getMinutes();
 
-    const getPrayerForTime = (date) => {
+    const isPrayerOpenNow = (prayerId, date) => {
         const mins = minutesNow(date);
-        if (mins >= 300 && mins < 420) return "fajr";
-        if (mins >= 720 && mins < 900) return "dhuhr";
-        if (mins >= 990 && mins < 1050) return "asr";
-        if (mins >= 1080 && mins < 1140) return "maghrib";
-        if (mins >= 1200 && mins < 1320) return "isha";
+        const window = PRAYER_TIME_WINDOWS[prayerId];
+        if (!window) return false;
+        return mins >= window.start && mins < window.end;
+    };
+
+    const getPrayerForTime = (date) => {
+        for (const prayerId of PRAYER_ORDER) {
+            if (isPrayerOpenNow(prayerId, date)) return prayerId;
+        }
         return null;
     };
 
     const getLockedPrayersByTime = (date) => {
         const mins = minutesNow(date);
         return {
-            fajr: mins >= 420,
-            dhuhr: mins >= 900,
-            asr: mins >= 1050,
-            maghrib: mins >= 1140,
-            isha: mins >= 1320,
+            fajr: mins >= PRAYER_TIME_WINDOWS.fajr.end,
+            dhuhr: mins >= PRAYER_TIME_WINDOWS.dhuhr.end,
+            asr: mins >= PRAYER_TIME_WINDOWS.asr.end,
+            maghrib: mins >= PRAYER_TIME_WINDOWS.maghrib.end,
+            isha: mins >= PRAYER_TIME_WINDOWS.isha.end,
         };
     };
 
@@ -307,54 +356,35 @@
 
     const applyIshaStreakIfEligible = (state, now) => {
         if (!isIshaTimeOrLater(now)) return state;
-        if (state.lastStreakDate === state.dateKey) return state;
-        if (!didMeetDailyStreakRequirement(state)) {
-            if (state.streak === 0 && state.lastStreakDate === null) {
-                return state;
-            }
-            return {
-                ...state,
-                streak: 0,
-                lastStreakDate: null,
-            };
-        }
+        if (!didMeetDailyStreakRequirement(state)) return state;
+
+        const todayKey = toDateKey(now);
+        if (state.lastStreakDate === todayKey) return state;
 
         const streak =
             state.lastStreakDate &&
-            isConsecutiveDay(state.lastStreakDate, state.dateKey)
+            isConsecutiveDay(state.lastStreakDate, todayKey)
                 ? state.streak + 1
                 : 1;
 
         return {
             ...state,
+            dateKey: todayKey,
             streak,
-            lastStreakDate: state.dateKey,
+            lastStreakDate: todayKey,
         };
     };
 
     const rollForwardState = (state, now) => {
         const todayKey = toDateKey(now);
-        if (state.dateKey === todayKey) {
-            return applyIshaStreakIfEligible(state, now);
-        }
-
-        const passedDays = dayDiff(state.dateKey, todayKey);
-        const canCarryStreak =
-            passedDays === 1 &&
-            state.lastStreakDate === state.dateKey &&
-            isConsecutiveDay(state.lastStreakDate, todayKey);
-
-        const streak = canCarryStreak ? state.streak : 0;
-        const lastStreakDate = canCarryStreak ? state.lastStreakDate : null;
-
-        const fresh = createEmptyDailyState(
-            now,
-            getPrayerForTime(now) || state.selectedPrayer,
-        );
-        fresh.customMode = state.customMode || { count: 0, target: 100 };
-        fresh.streak = streak;
-        fresh.lastStreakDate = lastStreakDate;
-        return fresh;
+        const normalizedState =
+            state.dateKey === todayKey
+                ? state
+                : {
+                      ...state,
+                      dateKey: todayKey,
+                  };
+        return applyIshaStreakIfEligible(normalizedState, now);
     };
 
     const loadSettings = () => {
@@ -502,6 +532,20 @@
         duaChevron.classList.remove("open");
         duaButton.setAttribute("aria-expanded", "false");
         settingsToggle.setAttribute("aria-expanded", "false");
+    };
+
+    const closeResetDialog = () => {
+        if (!resetDialogOverlay) return;
+        resetDialogOverlay.classList.add("hidden");
+        document.body.classList.remove("dialog-open");
+    };
+
+    const openResetDialog = () => {
+        if (!resetDialogOverlay) return;
+        closeMenus();
+        resetDialogOverlay.classList.remove("hidden");
+        document.body.classList.add("dialog-open");
+        if (resetDeleteButton) resetDeleteButton.focus();
     };
 
     const setPrayerBg = () => {
@@ -944,10 +988,38 @@
     });
 
     resetAllButton.addEventListener("click", () => {
-        const yes = window.confirm(
-            "Delete all tasbih data? This will remove saved progress, counts, daily data, and streak.",
-        );
-        if (yes) resetAllData();
+        openResetDialog();
+    });
+
+    if (resetCancelButton) {
+        resetCancelButton.addEventListener("click", () => {
+            closeResetDialog();
+        });
+    }
+
+    if (resetDeleteButton) {
+        resetDeleteButton.addEventListener("click", () => {
+            closeResetDialog();
+            resetAllData();
+        });
+    }
+
+    if (resetDialogOverlay) {
+        resetDialogOverlay.addEventListener("click", (event) => {
+            if (event.target === resetDialogOverlay) {
+                closeResetDialog();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", (event) => {
+        if (
+            event.key === "Escape" &&
+            resetDialogOverlay &&
+            !resetDialogOverlay.classList.contains("hidden")
+        ) {
+            closeResetDialog();
+        }
     });
 
     updateClockAndRollState();

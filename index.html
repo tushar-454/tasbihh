@@ -304,6 +304,50 @@
             </section>
         </main>
 
+        <div
+            id="resetDialogOverlay"
+            class="dialog-overlay hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="resetDialogTitle"
+            aria-describedby="resetDialogDescription"
+        >
+            <div
+                id="resetDialog"
+                class="dialog-card"
+            >
+                <h2
+                    id="resetDialogTitle"
+                    class="dialog-title"
+                >
+                    Reset all data?
+                </h2>
+                <p
+                    id="resetDialogDescription"
+                    class="dialog-description"
+                >
+                    This will permanently remove saved progress, daily prayer
+                    counts, and streak data.
+                </p>
+                <div class="dialog-actions">
+                    <button
+                        id="resetCancelButton"
+                        class="settings-action"
+                        type="button"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        id="resetDeleteButton"
+                        class="settings-action danger"
+                        type="button"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script
             src="./script.js"
             defer
