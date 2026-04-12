@@ -270,6 +270,14 @@
         };
     };
 
+    const createEmptyAllPrayerProgress = () => ({
+        fajr: createEmptyPrayerProgress("fajr"),
+        dhuhr: createEmptyPrayerProgress("dhuhr"),
+        asr: createEmptyPrayerProgress("asr"),
+        maghrib: createEmptyPrayerProgress("maghrib"),
+        isha: createEmptyPrayerProgress("isha"),
+    });
+
     const migratePrayerProgress = (prayer, progress) => {
         const allowedDuas = duas.filter((d) => d.prayer.includes(prayer));
         const allowedIds = new Set(allowedDuas.map((d) => d.id));
@@ -383,6 +391,7 @@
                 : {
                       ...state,
                       dateKey: todayKey,
+                      prayers: createEmptyAllPrayerProgress(),
                   };
         return applyIshaStreakIfEligible(normalizedState, now);
     };
